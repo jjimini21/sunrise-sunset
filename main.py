@@ -57,11 +57,17 @@ st.markdown('<div class="section-title">📍 1. 위치와 날짜 설정</div>', 
 with st.form("sun_form"):
     col1, col2 = st.columns(2)
     with col1:
-        lat = st.number_input("위도 (°)", min_value=-90.0, max_value=90.0, value=37.5665, step=0.1, format="%.4f",
-                              help="북위는 양수, 남위는 음수입니다. 서울 예시: 37.5665")
+        lat = st.number_input(
+            "위도 (°)", min_value=-90.0, max_value=90.0,
+            value=37.5665, step=0.1, format="%.4f",
+            help="북위는 양수, 남위는 음수입니다. 서울 예시: 37.5665"
+        )
     with col2:
-        lng = st.number_input("경도 (°)", min_value=-180.0, max_value=180.0, value=126.9780, step=0.1, format="%.4f",
-                              help="동경은 양수, 서경은 음수입니다. 서울 예시: 126.9780")
+        lng = st.number_input(
+            "경도 (°)", min_value=-180.0, max_value=180.0,
+            value=126.9780, step=0.1, format="%.4f",
+            help="동경은 양수, 서경은 음수입니다. 서울 예시: 126.9780"
+        )
     date_value = st.date_input("날짜", value=dt.datetime.now(KST).date())
     timezone_choice = st.selectbox(
         "표시 시간대",
@@ -69,10 +75,13 @@ with st.form("sun_form"):
         index=0,
         help="좌표 위치의 현지 시간은 API가 좌표를 바탕으로 시간대를 판단합니다.",
     )
-    submitted = st.form_submit_button("☀️ 일출·일몰 정보 조회", use_container_width=True, type="primary")
+    submitted = st.form_submit_button(
+        "☀️ 일출·일몰 정보 조회", use_container_width=True, type="primary"
+    )
 
 if "sun_query" not in st.session_state:
     st.session_state.sun_query = None
+
 if submitted:
     st.session_state.sun_query = {
         "lat": float(lat),
@@ -82,15 +91,6 @@ if submitted:
     }
 
 def parse_time(value):
-    if value is None:
+    """API에서 받은 ISO 시각을 timezone-aware datetime으로 변환합니다."""
+    if not value:
         return None
-    parsed = dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
-    if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=dt.timezone.utc)
-    return parsed
-
-def display_time(value, tz_choice):
-    parsed = parse_time(value)
-    if parsed is None:
-        return "해당 날짜에 발생하지 않음"
-    if tz_choice == "한국 표준시 (KST)":
